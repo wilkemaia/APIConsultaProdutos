@@ -1,0 +1,14 @@
+
+# Ignorar cache do Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignorar ambiente virtual
+venv/
+
+# Ignorar configurações locais do VS Code
+.vscode/
+
+# Ignorar diretório instance (se for usado para configs locais)
+instance/
