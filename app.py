@@ -29,6 +29,18 @@ class Produto(db.Model):
             return jsonify({"message":"Product added with sucessfully."})
         return jsonify({"message":"Invalid product data"}),400
   
+  
+  
+    @app.route('/api/product/delete/<int:product_id>',methods=["DELETE"])
+    def delete_product(product_id):
+        product = Produto.query.get(product_id)
+        if product :
+            db.session.delete(product)
+            db.session.commit()
+            return jsonify({"message":"Product deleteted sucessfully."})
+        
+        return jsonify({"message":"Product not found"}),404
+
 @app.route('/')
 def hell_world():
     return 'Hello Word'
