@@ -20,7 +20,7 @@ class Produto(db.Model):
     description = db.Column(db.Text,nullable = True)
     
     @app.route('/api/product/add',methods =["POST"])
-    def add_product():
+    def add_product(self):
         data = request.json
         if 'name' in data and 'price' in data :
             product = Produto(name=data["name"],price=data["price"],description=data.get("description",""))
@@ -39,6 +39,20 @@ class Produto(db.Model):
             db.session.commit()
             return jsonify({"message":"Product deleteted sucessfully."})
         
+        return jsonify({"message":"Product not found"}),404
+    
+    
+    @app.route('/api/product/<int:product_id>',methods=["GET"])
+    def get_produto_detail(product_id):
+        produto = Produto.query.get(product_id)
+        if produto:
+            return jsonify ({
+                "id": produto.id,
+                "name":produto.name,
+                "price":produto.price,
+                "description":produto.description
+            }) 
+            
         return jsonify({"message":"Product not found"}),404
 
 @app.route('/')
