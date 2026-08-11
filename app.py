@@ -54,6 +54,30 @@ class Produto(db.Model):
             }) 
             
         return jsonify({"message":"Product not found"}),404
+    
+    
+    @app.route('/api/products/update/<int:product_id>',methods=["PUT"])
+    def update_product(product_id):
+        product = Produto.query.get(product_id)
+        if not product :
+            return ({"message":"Product not found"}),404
+        
+        data = request.json
+        if 'name' in data:
+            product.name = data['name']
+            
+        if 'price' in data :
+            product.price = data['price']
+            
+        if 'description' in data:
+            product.description = data['description']
+            
+        db.session.commit()
+        
+        return ({"message":"Product update sucessfully."})
+    
+            
+            
 
 @app.route('/')
 def hell_world():
