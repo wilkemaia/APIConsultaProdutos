@@ -78,7 +78,21 @@ class Produto(db.Model):
     
             
             
-
+@app.route('/api/products',methods =["GET"])
+def get_produtos():
+    products = Produto.query.all()
+    list_product = []
+    for produto in products :
+        product_data = {
+            "id":produto.id,
+            "name":produto.name,
+            "price":produto.price,
+            "description":produto.description
+        } 
+        
+        list_product.append(product_data)
+    return jsonify(list_product)
+        
 @app.route('/')
 def hell_world():
     return 'Hello Word'
