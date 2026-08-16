@@ -1,5 +1,7 @@
 from  flask import Flask,request, json,jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
+from flask_login import UserMixin
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///ecommerce.db"
@@ -11,8 +13,17 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///ecommerce.db"
 #-> Exit()
 
 db = SQLAlchemy(app)
+CORS(app)
 
 #Modelagem
+
+# Obs: Para criar um novo banco : flask shell -> db.drop_all() -> db.create_all() -> db.session.commit() -> exit()
+# Para criar usuário pelo flask shell : flask shell -> user = User(username ="admin",password = "123") -> db.session.add(user) -> db.session.commit() -> exit()
+class User(db.Model,UserMixin):
+    id=db.Column(db.Integer,primary_key = True)
+    username=db.Column(db.String(80),nullable=False,unique=True)
+    password = db.Column(db.String(80),nullable=True)
+    
 class Produto(db.Model):
     id = db.Column(db.Integer,primary_key=True)
     name = db.Column(db.String(120),nullable=False)
@@ -92,6 +103,15 @@ def get_produtos():
         
         list_product.append(product_data)
     return jsonify(list_product)
+
+@app.route('/login',methods=["POST"])
+def login():
+    data = request.json
+    user = User.query.filter_by(username = data.get("username")).first()
+    if user and data.get("password") == user.password :
+        return jsonify({"message":"Logged sucessfully."})
+    return jsonify({"message":"Unathorized. Invalid credentials."})
+
         
 @app.route('/')
 def hell_world():
