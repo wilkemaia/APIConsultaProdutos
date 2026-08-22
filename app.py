@@ -32,7 +32,13 @@ class Produto(db.Model):
     name = db.Column(db.String(120),nullable=False)
     price = db.Column(db.Float,nullable=False)
     description = db.Column(db.Text,nullable = True)
-    
+   
+   
+   #Autenticação
+    @login_manager.user_loader
+    def loader_user(user_id):
+        return User.query.get(int(user_id))
+
     
     @app.route('/logout',methods=["POST"])
     @login_required
@@ -40,9 +46,18 @@ class Produto(db.Model):
         logout_user()
         return jsonify({"message":"Logout sucessfully"})
     
+    
+    
+    @app.route('/logout',methods=["POST"])
+    @login_required
+    def deslogar():
+        logout_user()
+        return jsonify({"message":"Logout sucessfully."})
+        
+    
     @app.route('/api/product/add',methods =["POST"])
     @login_required
-    def add_product(self):
+    def add_product():
         data = request.json
         if 'name' in data and 'price' in data :
             product = Produto(name=data["name"],price=data["price"],description=data.get("description",""))
