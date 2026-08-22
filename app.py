@@ -1,9 +1,10 @@
 from  flask import Flask,request, json,jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from flask_login import UserMixin
+from flask_login import UserMixin,login_user,LoginManager,login_required,logout_user
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = "minha_chave_123"
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///ecommerce.db"
 
 # Para criar o banco sqlite:
@@ -11,8 +12,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///ecommerce.db"
 #-> db.session.create_all()
 #-> db.session.commit()
 #-> Exit()
-
+login_manager = LoginManager()
 db = SQLAlchemy(app)
+login_manager.init_app(app)
+login_manager.login_view ="login"
 CORS(app)
 
 #Modelagem
@@ -30,7 +33,15 @@ class Produto(db.Model):
     price = db.Column(db.Float,nullable=False)
     description = db.Column(db.Text,nullable = True)
     
+    
+    @app.route('/logout',methods=["POST"])
+    @login_required
+    def logout():
+        logout_user()
+        return jsonify({"message":"Logout sucessfully"})
+    
     @app.route('/api/product/add',methods =["POST"])
+    @login_required
     def add_product(self):
         data = request.json
         if 'name' in data and 'price' in data :
@@ -43,6 +54,7 @@ class Produto(db.Model):
   
   
     @app.route('/api/product/delete/<int:product_id>',methods=["DELETE"])
+    @login_required
     def delete_product(product_id):
         product = Produto.query.get(product_id)
         if product :
@@ -68,6 +80,7 @@ class Produto(db.Model):
     
     
     @app.route('/api/products/update/<int:product_id>',methods=["PUT"])
+    @login_required
     def update_product(product_id):
         product = Produto.query.get(product_id)
         if not product :
@@ -86,7 +99,6 @@ class Produto(db.Model):
         db.session.commit()
         
         return ({"message":"Product update sucessfully."})
-    
             
             
 @app.route('/api/products',methods =["GET"])
@@ -104,13 +116,19 @@ def get_produtos():
         list_product.append(product_data)
     return jsonify(list_product)
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+    
+
 @app.route('/login',methods=["POST"])
 def login():
     data = request.json
     user = User.query.filter_by(username = data.get("username")).first()
     if user and data.get("password") == user.password :
+        login_user(user)
         return jsonify({"message":"Logged sucessfully."})
-    return jsonify({"message":"Unathorized. Invalid credentials."})
+    return jsonify({"message":"Unathorized. Invalid credentials."}),401
 
         
 @app.route('/')
