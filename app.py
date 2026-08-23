@@ -169,6 +169,14 @@ def add_to_cart(product_id):
     return jsonify({"message":"Falhou  ao adicionar no carrinho."}),400
     
 
+@app.route('/api/cart/remove/<int:product_id>',methods = ["DELETE"])
+@login_required
+def remover_from_cart(product_id):
+    cart_item = CartItem.query.filter_by(user_id = current_user.id,produto_id = product_id).first()
+    if cart_item :
+         db.session.delete(cart_item)
+         return jsonify({"message":"Item deletado do carrinho"})
+    return jsonify({"message":"Falha ao deletar item do carrinho"})
 
 if __name__ =="__main__":
     app.run(debug=True)
