@@ -176,7 +176,27 @@ def remover_from_cart(product_id):
     if cart_item :
          db.session.delete(cart_item)
          return jsonify({"message":"Item deletado do carrinho"})
-    return jsonify({"message":"Falha ao deletar item do carrinho"})
+    return jsonify({"message":"Falha ao deletar item do carrinho"}),400
+
+
+@app.route('/api/cart',methods=["GET"])
+@login_required
+def view_cart():
+    user = User.query.get(int(current_user.id))
+    cart_itens = user.cart
+    cart_content  = []
+    for cart_item in cart_itens:
+        produto = Produto.query.get(cart_item.produto_id)
+        cart_content.append({
+            "id":cart_item.id,
+            "user_id":cart_item.user_id,
+            "produto_id":cart_item.produto_id,
+            "produto_name":produto.name,
+            "price":produto.price,
+            "description":produto.description
+            
+        })
+    return (cart_content)
 
 if __name__ =="__main__":
     app.run(debug=True)
