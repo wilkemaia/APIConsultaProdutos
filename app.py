@@ -198,5 +198,17 @@ def view_cart():
         })
     return (cart_content)
 
+@app.route('/api/cart/checkout',methods=["POST"])
+@login_required
+def checkout():
+    user  = User.query.get(int(current_user.id))
+    cart_items = user.cart
+    for cart_item  in cart_items:
+        db.session.delete(cart_item)
+    db.session.commit()
+    return jsonify({"message":"Checkout limpo com sucesso"})
+    
+        
+
 if __name__ =="__main__":
     app.run(debug=True)
