@@ -5,9 +5,9 @@ from flask_login import UserMixin,login_user,LoginManager,login_required,logout_
 from sqlalchemy import  ForeignKey
 
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = "minha_chave_123"
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///ecommerce.db"
+application = Flask(__name__)
+application.config['SECRET_KEY'] = "minha_chave_123"
+application.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///ecommerce.db"
 
 # Para criar o banco sqlite:
 # flask shell
@@ -15,10 +15,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///ecommerce.db"
 #-> db.session.commit()
 #-> Exit()
 login_manager = LoginManager()
-db = SQLAlchemy(app)
-login_manager.init_app(app)
+db = SQLAlchemy(application)
+login_manager.init_app(application)
 login_manager.login_view ="login"
-CORS(app)
+CORS(application)
 
 #Modelagem
 
@@ -49,7 +49,7 @@ class CartItem(db.Model):
         return User.query.get(int(user_id))
 
     
-    @app.route('/logout',methods=["POST"])
+    @application.route('/logout',methods=["POST"])
     @login_required
     def logout():
         logout_user()
@@ -57,14 +57,14 @@ class CartItem(db.Model):
     
     
     
-    @app.route('/logout',methods=["POST"])
+    @application.route('/logout',methods=["POST"])
     @login_required
     def deslogar():
         logout_user()
         return jsonify({"message":"Logout sucessfully."})
         
     
-    @app.route('/api/product/add',methods =["POST"])
+    @application.route('/api/product/add',methods =["POST"])
     @login_required
     def add_product():
         data = request.json
@@ -77,7 +77,7 @@ class CartItem(db.Model):
   
   
   
-    @app.route('/api/product/delete/<int:product_id>',methods=["DELETE"])
+    @application.route('/api/product/delete/<int:product_id>',methods=["DELETE"])
     @login_required
     def delete_product(product_id):
         product = Produto.query.get(product_id)
@@ -89,7 +89,7 @@ class CartItem(db.Model):
         return jsonify({"message":"Product not found"}),404
     
     
-    @app.route('/api/product/<int:product_id>',methods=["GET"])
+    @application.route('/api/product/<int:product_id>',methods=["GET"])
     def get_produto_detail(product_id):
         produto = Produto.query.get(product_id)
         if produto:
@@ -103,7 +103,7 @@ class CartItem(db.Model):
         return jsonify({"message":"Product not found"}),404
     
     
-    @app.route('/api/products/update/<int:product_id>',methods=["PUT"])
+    @application.route('/api/products/update/<int:product_id>',methods=["PUT"])
     @login_required
     def update_product(product_id):
         product = Produto.query.get(product_id)
@@ -125,7 +125,7 @@ class CartItem(db.Model):
         return ({"message":"Product update sucessfully."})
             
             
-@app.route('/api/products',methods =["GET"])
+@application.route('/api/products',methods =["GET"])
 def get_produtos():
     products = Produto.query.all()
     list_product = []
@@ -144,8 +144,11 @@ def get_produtos():
 def load_user(user_id):
     return User.query.get(int(user_id))
     
+@application.route('/')
+def initial():
+    return 'API Checkout'
 
-@app.route('/login',methods=["POST"])
+@application.route('/login',methods=["POST"])
 def login():
     data = request.json
     user = User.query.filter_by(username = data.get("username")).first()
@@ -156,7 +159,7 @@ def login():
 
         
 #Checkout
-@app.route('/api/cart/add/<int:product_id>',methods=["POST"])
+@application.route('/api/cart/add/<int:product_id>',methods=["POST"])
 @login_required
 def add_to_cart(product_id):
     user  = User.query.get(int(current_user.id))
@@ -169,7 +172,7 @@ def add_to_cart(product_id):
     return jsonify({"message":"Falhou  ao adicionar no carrinho."}),400
     
 
-@app.route('/api/cart/remove/<int:product_id>',methods = ["DELETE"])
+@application.route('/api/cart/remove/<int:product_id>',methods = ["DELETE"])
 @login_required
 def remover_from_cart(product_id):
     cart_item = CartItem.query.filter_by(user_id = current_user.id,produto_id = product_id).first()
@@ -179,7 +182,7 @@ def remover_from_cart(product_id):
     return jsonify({"message":"Falha ao deletar item do carrinho"}),400
 
 
-@app.route('/api/cart',methods=["GET"])
+@application.route('/api/cart',methods=["GET"])
 @login_required
 def view_cart():
     user = User.query.get(int(current_user.id))
@@ -198,7 +201,7 @@ def view_cart():
         })
     return (cart_content)
 
-@app.route('/api/cart/checkout',methods=["POST"])
+@application.route('/api/cart/checkout',methods=["POST"])
 @login_required
 def checkout():
     user  = User.query.get(int(current_user.id))
@@ -211,4 +214,4 @@ def checkout():
         
 
 if __name__ =="__main__":
-    app.run(debug=True)
+    application.run(debug=True)
